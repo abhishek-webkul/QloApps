@@ -40,7 +40,16 @@ class PasswordControllerCore extends FrontController
                 $this->errors[] = Tools::displayError('Invalid email address.');
             } else {
                 $customer = new Customer();
-                $customer->getByemail($email);
+                $customer->getByemail($email, null, false);
+                if ($customer->isGuest()) {
+                    $customer->is_guest = 0;
+                    if ($customer->update()) {
+                        $customer->cleanGroups();
+                        $customer->addGroups(array(Configuration::get('PS_CUSTOMER_GROUP')));
+                        $customer->id_default_group = Configuration::get('PS_CUSTOMER_GROUP');
+                        $customer->update();
+                    }
+                }
                 if (!Validate::isLoadedObject($customer)) {
                     $this->errors[] = Tools::displayError('There is no account registered for this email address.');
                 } elseif (!$customer->active) {
@@ -48,11 +57,12 @@ class PasswordControllerCore extends FrontController
                 } elseif ((strtotime($customer->last_passwd_gen.'+'.($min_time = (int)Configuration::get('PS_PASSWD_TIME_FRONT')).' minutes') - time()) > 0) {
                     $this->errors[] = sprintf(Tools::displayError('You can regenerate your password only every %d minute(s)'), (int)$min_time);
                 } else {
+                    $url = $this->context->link->getPageLink('password', true, null, 'token='.$customer->secure_key.'&id_customer='.(int)$customer->id);
                     $mail_params = array(
                         '{email}' => $customer->email,
                         '{lastname}' => $customer->lastname,
                         '{firstname}' => $customer->firstname,
-                        '{url}' => $this->context->link->getPageLink('password', true, null, 'token='.$customer->secure_key.'&id_customer='.(int)$customer->id)
+                        '{url}' => $url
                     );
                     if (Mail::Send($this->context->language->id, 'password_query', Mail::l('Password query confirmation'), $mail_params, $customer->email, $customer->firstname.' '.$customer->lastname)) {
                         $this->context->smarty->assign(array('confirmation' => 2, 'customer_email' => $customer->email));
