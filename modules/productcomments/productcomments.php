@@ -79,7 +79,6 @@ class ProductComments extends Module
 			!$this->registerHook('extraProductComparison') ||
 			!$this->registerHook('productTabContent') ||
 			!$this->registerHook('header') ||
-			!$this->registerHook('displayRightColumnProduct') ||
 			!$this->registerHook('displayProductListReviews') ||
 			!Configuration::updateValue('PRODUCT_COMMENTS_MINIMAL_TIME', 30) ||
 			!Configuration::updateValue('PRODUCT_COMMENTS_ALLOW_GUESTS', 0) ||
@@ -496,7 +495,6 @@ class ProductComments extends Module
 		return $helper->generateList($comments, $fields_list);
 	}
 
-
 	public function getConfigFieldsValues()
 	{
 		return array(
@@ -787,44 +785,6 @@ class ProductComments extends Module
 			));
 		}
 		return $this->display(__FILE__, 'productcomments_reviews.tpl', $this->getCacheId($id_product));
-	}
-
-	public function hookDisplayRightColumnProduct($params)
-	{
-		require_once(dirname(__FILE__).'/ProductComment.php');
-		require_once(dirname(__FILE__).'/ProductCommentCriterion.php');
-
-		$id_guest = (!$id_customer = (int)$this->context->cookie->id_customer) ? (int)$this->context->cookie->id_guest : false;
-		$customerComment = ProductComment::getByCustomer((int)(Tools::getValue('id_product')), (int)$this->context->cookie->id_customer, true, (int)$id_guest);
-
-		$average = ProductComment::getAverageGrade((int)Tools::getValue('id_product'));
-		$product = $this->context->controller->getProduct();
-		$image = Product::getCover((int)Tools::getValue('id_product'));
-		$cover_image = $this->context->link->getImageLink($product->link_rewrite, $image['id_image'], 'medium_default');
-
-		$this->context->smarty->assign(array(
-			'id_product_comment_form' => (int)Tools::getValue('id_product'),
-			'product' => $product,
-			'secure_key' => $this->secure_key,
-			'logged' => $this->context->customer->isLogged(true),
-			'allow_guests' => (int)Configuration::get('PRODUCT_COMMENTS_ALLOW_GUESTS'),
-			'productcomment_cover' => (int)Tools::getValue('id_product').'-'.(int)$image['id_image'], // retro compat
-			'productcomment_cover_image' => $cover_image,
-			'mediumSize' => Image::getSize(ImageType::getFormatedName('medium')),
-			'criterions' => ProductCommentCriterion::getByProduct((int)Tools::getValue('id_product'), $this->context->language->id),
-			'action_url' => '',
-			'averageTotal' => round($average['grade']),
-			'ratings' => ProductComment::getRatings((int)Tools::getValue('id_product')),
-			'too_early' => ($customerComment && (strtotime($customerComment['date_add']) + Configuration::get('PRODUCT_COMMENTS_MINIMAL_TIME')) > time()),
-			'nbComments' => (int)(ProductComment::getCommentNumber((int)Tools::getValue('id_product')))
-	   ));
-
-		return ($this->display(__FILE__, '/productcomments-extra.tpl'));
-	}
-
-	public function hookDisplayLeftColumnProduct($params)
-	{
-		return $this->hookDisplayRightColumnProduct($params);
 	}
 
 	public function hookProductTabContent($params)
