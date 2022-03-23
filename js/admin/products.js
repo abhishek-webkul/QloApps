@@ -1883,6 +1883,30 @@ var ProductMultishop = new function()
 var tabs_manager = new ProductTabsManager();
 tabs_manager.setTabs(product_tabs);
 
+$(document).on('click', '.submit-specific-price', function(e) {
+	e.preventDefault();
+	$('#specific-price-errors').html('').hide();
+	var id_product = parseInt($('input[name=id_product]').first().val());
+	var url = 'index.php?controller=AdminProducts' + '&token=' + token;
+	var data = 'ajax=1&action=AddSpecificPrice&id_product=' + id_product + '&' + $('#add_specific_price :input').serialize();
+	$.ajax({
+		url: url,
+		data: data,
+		dataType: 'JSON',
+		success: function(response) {
+			if (response.status == 'success') {
+				window.location += '&conf=4';
+			} else if (response.status == 'failed') {
+				var html = '';
+				$.each(response.errors, function(i, error) {
+					html += '<li>' + error + '</li>';
+				});
+				$('#specific-price-errors').append('<ul>' + html + '</ul>').slideToggle();
+			}
+		},
+	});
+});
+
 $(document).ready(function() {
 	// The manager schedules the onReady() methods of each tab to be called when the tab is loaded
 	tabs_manager.init();
