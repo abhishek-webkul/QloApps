@@ -507,11 +507,8 @@ var ajaxCart = {
                     var date_checkIn = $('#room_check_in').val();
                     var date_checkOut = $('#room_check_out').val();
                     var product_page_id_product = $('#product_page_product_id').val();
-                    console.log(idProduct == product_page_id_product);
-                    console.log(dateFrom);
-                    console.log(date_checkOut);
-                    console.log(dateTo);
-                    console.log(date_checkIn);
+                    date_checkOut = formatDateToYMD(date_checkOut);
+                    date_checkIn = formatDateToYMD(date_checkIn);
                     if (idProduct == product_page_id_product && dateFrom < date_checkOut && dateTo >= date_checkIn) {
                         if (jsonData.avail_rooms <= room_warning_num) {
                             $('.num_quantity_alert').show();
@@ -1219,4 +1216,12 @@ function getRoomsExtraDemands()
     });
 
     return roomDemands;
+}
+
+function formatDateToYMD(date) {
+    if (!date) {
+        return false;
+    }
+    var components = date.split('-');
+    return $.datepicker.formatDate('yy-mm-dd', new Date(components[2], components[1] - 1, components[0]));
 }

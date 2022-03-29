@@ -318,18 +318,13 @@ class ProductControllerCore extends FrontController
                 }
                 //END
                 $obj_booking_dtl = new HotelBookingDetail();
-                $hotel_room_data = $obj_booking_dtl->DataForFrontSearch($date_from, $date_to, $hotel_id, $this->product->id, 1);
+                $hotel_room_data = $obj_booking_dtl->DataForFrontSearch($date_from, $date_to, $hotel_id, $this->product->id, 1, 0, 0, -1, 0, 0, $this->context->cart->id, $this->context->cookie->id_guest);
 
                 if ($hotel_room_data) {
                     $total_available_rooms = $hotel_room_data['stats']['num_avail'];
                 }
+                
                 $hotel_branch_obj = new HotelBranchInformation($hotel_id);
-                if (isset($this->context->cart->id)) {
-                    $num_cart_rooms = $obj_htl_cart_booking_data->getCountRoomsByIdCartIdProduct($this->context->cart->id, $this->product->id, $date_from, $date_to);
-                    if ($num_cart_rooms) {
-                        $total_available_rooms = $total_available_rooms - $num_cart_rooms;
-                    }
-                }
                 /*Max date of ordering for order restrict*/
                 $order_date_restrict = false;
                 $max_order_date = HotelOrderRestrictDate::getMaxOrderDate($hotel_id);
