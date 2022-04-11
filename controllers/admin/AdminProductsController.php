@@ -5749,6 +5749,19 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
+    public function ajaxProcessAddSpecificPrice()
+    {
+        $response = array('status' => 'failed');
+        $this->processPriceAddition();
+        if (!count($this->errors)) {
+            $response['status'] = 'success';
+        } else {
+            $response['status'] = 'failed';
+            $response['errors'] = $this->errors;
+        }
+        die(json_encode($response));
+    }
+
     public function processImageLegends()
     {
         if (Tools::getValue('key_tab') == 'Images' && Tools::getValue('submitAddproductAndStay') == 'update_legends' && Validate::isLoadedObject($product = new Product((int)Tools::getValue('id_product')))) {
