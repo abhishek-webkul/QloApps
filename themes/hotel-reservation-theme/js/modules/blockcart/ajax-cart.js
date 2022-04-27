@@ -504,14 +504,9 @@ var ajaxCart = {
                 /*by webkul checking and setting availability of rooms*/
                 /*for product page add to cart quantity management*/
                 if (pagename == 'product') {
-                    var date_checkIn = $('#room_check_in').val();
-                    var date_checkOut = $('#room_check_out').val();
+                    var date_checkIn = $('#room_check_in_formatted').val();
+                    var date_checkOut = $('#room_check_out_formatted').val();
                     var product_page_id_product = $('#product_page_product_id').val();
-                    console.log(idProduct == product_page_id_product);
-                    console.log(dateFrom);
-                    console.log(date_checkOut);
-                    console.log(dateTo);
-                    console.log(date_checkIn);
                     if (idProduct == product_page_id_product && dateFrom < date_checkOut && dateTo >= date_checkIn) {
                         if (jsonData.avail_rooms <= room_warning_num) {
                             $('.num_quantity_alert').show();
