@@ -1111,35 +1111,19 @@ $(document).ready(function() {
             return highlightSelectedDateRange(date, $("#room_check_in").val(), $("#room_check_out").val());
         },
         onClose: function() {
-            var checkOut = $("#room_check_out").val();
             var dateIn = $('#room_check_in_formatted').val();
             var dateOut = $('#room_check_out_formatted').val();
-
             var selectedDate = new Date(dateIn);
             if (dateIn >= dateOut) {
                 selectedDate.setDate(selectedDate.getDate() + 1);
                 $("#room_check_out").datepicker("option", "minDate", selectedDate);
-                $("#room_check_out").val(dateIn);
+                $("#room_check_out").val($.datepicker.formatDate('dd-mm-yy', selectedDate));
+                var dateOut = $.datepicker.formatDate('yy-mm-dd', selectedDate);
+                $("#room_check_out_formatted").val(dateOut);
+
+                $("#room_check_out").datepicker("show");
             }
 
-            /* open datepicker of checkout date only if
-            checkout date is empty or checkin selected is equal or more than check out date */
-            if (checkOut == '') {
-                $("#room_check_out").datepicker("show");
-            } else {
-                // Lets make the date in the required format
-                var currentDate = selectedDate.getDate();
-                var currentMonth = selectedDate.getMonth() + 1;
-                if (currentMonth < 10) {
-                    currentMonth = '0' + currentMonth;
-                }
-                if (currentDate < 10) {
-                    currentDate = '0' + currentDate;
-                }
-                if (checkOut <= dateIn) {
-                    $("#room_check_out").datepicker('show');
-                }
-            }
             changeRoomDate(dateIn, dateOut);
         }
     });
@@ -1156,11 +1140,11 @@ $(document).ready(function() {
             var dateIn = $('#room_check_in_formatted').val();
             if (typeof dateIn != 'undefined' && dateIn != '') {
                 var selectedDate = new Date(dateIn);
-                selectedDate.setDate(selectedDate.getDate()+1);
+                selectedDate.setDate(selectedDate.getDate() + 1);
                 $("#room_check_out").datepicker("option", "minDate", selectedDate);
             } else {
                 var selectedDate = new Date($.datepicker.formatDate('yy-mm-dd', new Date()));
-                selectedDate.setDate(selectedDate.getDate()+1);
+                selectedDate.setDate(selectedDate.getDate() + 1);
                 $("#room_check_out").datepicker("option", "minDate", selectedDate);
             }
         },

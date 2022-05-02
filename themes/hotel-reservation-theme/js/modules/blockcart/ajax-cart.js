@@ -149,8 +149,8 @@ var ajaxCart = {
         if ($('.cart_block').length) {
             $(document).off('click', '#add_to_cart button').on('click', '#add_to_cart button', function(e) {
                 e.preventDefault();
-                var date_from = $('#room_check_in').val();
-                var date_to = $('#room_check_out').val();
+                var date_from = $('#room_check_in_formatted').val();
+                var date_to = $('#room_check_out_formatted').val();
                 ajaxCart.add($('#product_page_product_id').val(), $('#idCombination').val(), true, null, $('#quantity_wanted').val(), null, date_from, date_to);
 
             });
@@ -213,13 +213,12 @@ var ajaxCart = {
 
             /*by webkul*/
             if (pagename == 'product') {
-                dateFrom = $('#room_check_in').val();
-                dateTo = $('#room_check_out').val();
+                dateFrom = $('#room_check_in_formatted').val();
+                dateTo = $('#room_check_out_formatted').val();
             } else if (pagename == 'category') {
                 dateFrom = $('#check_in_time').val();
                 dateTo = $('#check_out_time').val();
             } else {
-
                 dateFrom = $.datepicker.formatDate('yy-mm-dd', new Date());;
                 dateTo = $.datepicker.formatDate('yy-mm-dd', new Date());;
             }
