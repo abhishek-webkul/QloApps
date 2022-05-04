@@ -423,7 +423,11 @@ class LanguageCore extends ObjectModel
 
         foreach ($tables as $table) {
             foreach ($table as $t) {
+<<<<<<< HEAD
                 if (!in_array($t, $exceptions)) {
+=======
+                if (!in_array($t, array(_DB_PREFIX_.'configuration_lang', _DB_PREFIX_.'configuration_kpi_lang'))) {
+>>>>>>> Remove table configuration_kpi_lang from copying values when adding new language
                     $langTables[] = $t;
                 }
             }
