@@ -1215,14 +1215,10 @@ class HotelBookingDetail extends ObjectModel
         $new_date_to
     ) {
         $rowByIdOrderIdRoom = Db::getInstance()->getRow('SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.' AND `id_order`='.(int)$id_order);
-        $numDays = $this->getNumberOfDays($old_date_from, $old_date_to);
-        $paidUnitRoomPriceTE = $rowByIdOrderIdRoom['total_price_tax_excl']/$numDays;
-        $paidUnitRoomPriceTI = $rowByIdOrderIdRoom['total_price_tax_incl']/$numDays;
+        $totalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice($rowByIdOrderIdRoom['id_product'], $new_date_from, $new_date_to);
 
-        $newNumDays = $this->getNumberOfDays($new_date_from, $new_date_to);
-        $newTotalPriceTE = $paidUnitRoomPriceTE * $newNumDays;
-        $newTotalPriceTI = $paidUnitRoomPriceTI * $newNumDays;
-        //$total_price = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice($rowByIdOrderIdRoom['id_product'], $new_date_from, $new_date_to);
+        $newTotalPriceTE = $totalPrice['total_price_tax_excl'];
+        $newTotalPriceTI = $totalPrice['total_price_tax_incl'];
         $table = 'htl_cart_booking_data';
         $table1 = 'htl_booking_detail';
         $num_days = $this->getNumberOfDays($new_date_from, $new_date_to);
