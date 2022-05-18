@@ -25,7 +25,7 @@
 				<span class="col-sm-2 col-xs-2"><i class="icon-cog"></i></span>
 				<span class="setting-title col-sm-10 col-xs-10">{l s='Feature Price' mod='hotelreservationsystem'}</span>
 			</a>
-			<a tabindex="0" class="btn btn-default col-sm-2 col-xs-2" role="button" data-toggle="popover" data-trigger="focus" title="{l s='Feature Prices Settings' mod='hotelreservationsystem'}" data-content="{l s='Here set specific prices for specific dates.' mod='hotelreservationsystem'}" data-placement="bottom">
+			<a tabindex="0" class="btn btn-default col-sm-2 col-xs-2" role="button" data-toggle="popover" data-trigger="focus" title="{l s='Feature Prices Settings' mod='hotelreservationsystem'}" data-content="{l s='Create or edit feature prices for specific room types and specific dates.' mod='hotelreservationsystem'}" data-placement="bottom">
 				<i class="icon-question-circle"></i>
 			</a>
 		</div>
