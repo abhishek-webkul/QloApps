@@ -115,6 +115,11 @@ if (typeof combinations !== 'undefined' && combinations)
 }
 /* */
 
+$(document).on('click', '#btn_room_info_map_tab', function(e) {
+    e.preventDefault();
+    $('.product_description_tabs a[href="#room_type_map_tab"]').tab('show');
+});
+
 $(document).ready(function() {
     var url_found = checkUrl();
     //init the price in relation of the selected attributes
@@ -1263,7 +1268,40 @@ $(document).ready(function() {
         }
         e.preventDefault();
 	});
+
+    if (typeof google === 'object') {
+        initMap();
+    }
 });
+
+function initMap() {
+    var map = new google.maps.Map($('#room_type_map_tab .map-wrap').get(0), {
+        zoom: 10,
+    });
+
+    var defaultLatLng = {
+        lat: Number(hotel_loc.latitude),
+        lng: Number(hotel_loc.longitude),
+    };
+
+    map.setCenter(defaultLatLng);
+
+    new google.maps.Marker({
+        position: defaultLatLng,
+        map: map,
+    });
+
+    var btn = $('#room_type_map_tab .btn-map-control-ui').get(0);
+    console.log(btn);
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btn);
+
+    btn.addEventListener('click', function () {
+        console.log(1);
+        var directionsLink = 'https://www.google.com/maps/dir/?api=1&destination='+
+        defaultLatLng.lat+','+defaultLatLng.lng;
+        window.open(directionsLink, '_blank');
+    });
+}
 
 function changeRoomTypeDemands() {
     var qty_wntd = $('#quantity_wanted').val();
