@@ -98,6 +98,40 @@ class hotelreservationsystem extends Module
         $this->context->controller->addJS($this->_path.'/views/js/HotelReservationFront.js');
     }
 
+    public function hookDisplayLeftColumn()
+    {
+        if (Tools::getValue('controller') == 'category') {
+            if (!Configuration::get('PS_API_KEY')) {
+                return;
+            }
+
+            $apiKey = Configuration::get('PS_API_KEY');
+            $idCategory = Tools::getValue('id_category');
+            $idHotel = HotelBranchInformation::getHotelIdByIdCategory($idCategory);
+            $objHotel = new HotelBranchInformation($idHotel, $this->context->language->id);
+
+            if (floatval($objHotel->latitude) == 0 && floatval($objHotel->longitude) == 0) {
+                return;
+            }
+
+            Media::addJsDef(array(
+                'hotel_location' => array(
+                    'latitude' => $objHotel->latitude,
+                    'longitude' => $objHotel->longitude,
+                ),
+                'hotel_name' => $objHotel->hotel_name,
+                'hotel_address' => $objHotel->address,
+            ));
+
+            $this->context->controller->addJS("https://maps.googleapis.com/maps/api/js?key=$apiKey&libraries=places");
+            $this->context->controller->addJS($this->getPathUri().'views/js/searchResultsMap.js');
+            $this->context->controller->addCSS($this->getPathUri().'views/css/searchResultsMap.css');
+
+            $this->context->smarty->assign('hotel', $objHotel);
+            return $this->display(__FILE__, 'searchResultsMap.tpl');
+        }
+    }
+
     public function hookDisplayAfterHookTop()
     {
         if (Tools::getValue('controller') == 'index') {
@@ -682,7 +716,8 @@ class hotelreservationsystem extends Module
                 'actionObjectProfileAddAfter',
                 'actionObjectProfileDeleteBefore',
                 'actionObjectGroupDeleteBefore',
-                'actionOrderStatusPostUpdate'
+                'actionOrderStatusPostUpdate',
+                'displayLeftColumn',
             )
         );
     }
