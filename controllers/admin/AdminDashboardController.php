@@ -267,6 +267,7 @@ class AdminDashboardControllerCore extends AdminController
             'hookDashboardTop' => Hook::exec('dashboardTop', $params),
             'hookDashboardZoneOne' => Hook::exec('dashboardZoneOne', $params),
             'hookDashboardZoneTwo' => Hook::exec('dashboardZoneTwo', $params),
+            'hookDashboardZoneThree' => Hook::exec('dashboardZoneThree', $params),
             //'translations' => $translations,
             'action' => self::$currentIndex,
             'warning' => $this->getWarningDomainName(),

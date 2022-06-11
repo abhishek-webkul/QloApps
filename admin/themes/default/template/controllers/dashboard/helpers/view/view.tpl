@@ -81,8 +81,34 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-4 col-lg-3" id="hookDashboardZoneOne">
-			{$hookDashboardZoneOne}
+		<div class="col-md-4 col-lg-3">
+			<div class="row">
+				<div class="col-xs-12" id="hookDashboardZoneOne">
+					{$hookDashboardZoneOne}
+				</div>
+				<div class="col-xs-12" id="hookDashboardZoneThree">
+					{$hookDashboardZoneThree}
+					<section class="dash_links panel">
+						<h3><i class="icon-link"></i> {l s='Useful links'}</h3>
+						<dl>
+							<dt><a href="https://qloapps.com/qlo-reservation-system/" class="_blank">{l s='Official Documentation'}</a></dt>
+							<dd>{l s='QloApps user guide'}</dd>
+						</dl>
+						<dl>
+							<dt><a href="https://forums.qloapps.com/" class="_blank">{l s='QloApps Forum'}</a></dt>
+							<dd>{l s='Connect with the QloApps community'}</dd>
+						</dl>
+						<dl>
+							<dt><a href="https://qloapps.com/addons/" class="_blank">{l s='QloApps Addons'}</a></dt>
+							<dd>{l s='Enhance your website with QloApps addons'}</dd>
+						</dl>
+						<dl>
+							<dt><a href="https://qloapps.com/contact/" class="_blank">{l s='Contact Us!'}</a></dt>
+							<dd>{l s='Contact us for any help'}</dd>
+						</dl>
+					</section>
+				</div>
+			</div>
 		</div>
 		<div class="col-md-8 col-lg-9" id="hookDashboardZoneTwo">
 			<div class='row'>

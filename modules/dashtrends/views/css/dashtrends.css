@@ -142,7 +142,7 @@
     color: #ffffff;
 }
 
-.bootstrap dt, .bootstrap dd {
+.bootstrap #dashtrends dt, .bootstrap #dashtrends dd {
     line-height: 0.6 !important;
 }
 
