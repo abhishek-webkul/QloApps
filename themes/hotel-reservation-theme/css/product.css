@@ -1470,3 +1470,22 @@ Quick View Styles
 	display:none;
 	border-top: 1px solid #eee;
 	padding-top: 15px;} */
+
+#room_type_map_tab .map-wrap {
+  min-height: 500px;
+}
+
+#room_type_map_tab .btn-map-control-ui {
+  background-color: #fff;
+  padding: 12px 12px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  cursor: pointer;
+}
+
+#room_type_map_tab .btn-map-control-ui span {
+  font-size: 18px;
+  text-align: center;
+  color: #191919;
+}
