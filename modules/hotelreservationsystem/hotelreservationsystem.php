@@ -123,7 +123,10 @@ class hotelreservationsystem extends Module
                 'hotel_address' => $objHotel->address,
             ));
 
-            $this->context->controller->addJS("https://maps.googleapis.com/maps/api/js?key=$apiKey&libraries=places");
+            $this->context->controller->addJS(
+                'https://maps.googleapis.com/maps/api/js?key='.$apiKey.'&libraries=places&language='.
+                $this->context->language->iso_code.'&region='.$this->context->country->iso_code
+            );
             $this->context->controller->addJS($this->getPathUri().'views/js/searchResultsMap.js');
             $this->context->controller->addCSS($this->getPathUri().'views/css/searchResultsMap.css');
 

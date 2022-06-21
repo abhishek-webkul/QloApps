@@ -29,9 +29,6 @@
     <div class="col-sm-12 lf_sub_cont">
         {if ($hotel->latitude|floatval != 0 && $hotel->longitude|floatval != 0)}
             <div class="map-wrap"></div>
-            <div class="btn-map-control-ui">
-                <span>{l s='Get Directions' mod='hotelreservationsystem'}</span>
-            </div>
         {/if}
     </div>
 </div>

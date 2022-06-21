@@ -35,30 +35,15 @@ function initMap() {
         title: hotel_name,
     });
 
-    const btn = $('#search-results-wrap .btn-map-control-ui').get(0);
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btn);
-
-    btn.addEventListener('click', function () {
-        console.log(1);
+    marker.addListener('click', function() {
         const directionsLink = 'https://www.google.com/maps/dir/?api=1&destination='+
         hotelLocation.lat+','+hotelLocation.lng;
         window.open(directionsLink, '_blank');
     });
-
-    const iwContent = '<div is="hotel-map-iw-content"><b>'+hotel_name+'</b>'+'<p>'+hotel_address+'</p></div>';
-    const infowindow = new google.maps.InfoWindow({
-        content: iwContent,
-    });
-
-    infowindow.open({
-        anchor: marker,
-        map,
-        shouldFocus: false,
-    });
 }
 
 $(document).ready(function() {
-    if (typeof hotel_location == 'object') {
+    if (typeof google == 'object' && typeof hotel_location == 'object') {
         initMap();
     }
 });

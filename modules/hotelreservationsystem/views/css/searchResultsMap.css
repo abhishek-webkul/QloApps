@@ -24,22 +24,3 @@
 #search-results-wrap .lf_sub_cont {
     max-height: none;
 }
-
-#search-results-wrap .btn-map-control-ui {
-    background-color: #fff;
-    padding: 8px 12px;
-    margin-bottom: 20px;
-    border-radius: 2px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.3);
-    cursor: pointer;
-}
-
-#search-results-wrap .btn-map-control-ui span {
-    font-size: 12px;
-    text-align: center;
-    color: #191919;
-}
-
-#search-results-wrap .gm-style-iw {
-    max-width: 200px !important;
-}

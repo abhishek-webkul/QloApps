@@ -113,12 +113,6 @@ if (typeof combinations !== 'undefined' && combinations)
 	}
 	combinations = combinationsJS;
 }
-/* */
-
-$(document).on('click', '#btn_room_info_map_tab', function(e) {
-    e.preventDefault();
-    $('.product_description_tabs a[href="#room_type_map_tab"]').tab('show');
-});
 
 $(document).ready(function() {
     var url_found = checkUrl();
@@ -856,7 +850,6 @@ function serialScrollResizeThumbContainer() {
     }
 }
 
-
 // Change the current product images regarding the combination selected
 function refreshProductImages(id_product_attribute) {
     id_product_attribute = parseInt(id_product_attribute);
@@ -963,7 +956,6 @@ function colorPickerClick(elt) {
     });
     $(elt).parent().parent().parent().children('.color_pick_hidden').val(id_attribute);
 }
-
 
 function getProductAttribute() {
     // get every attributes values
@@ -1275,32 +1267,25 @@ $(document).ready(function() {
 });
 
 function initMap() {
-    var map = new google.maps.Map($('#room_type_map_tab .map-wrap').get(0), {
+    const map = new google.maps.Map($('#room_type_map_tab .map-wrap').get(0), {
         zoom: 10,
+        streetViewControl: false,
     });
 
-    var defaultLatLng = {
+    const hotelLatLng = {
         lat: Number(hotel_loc.latitude),
         lng: Number(hotel_loc.longitude),
     };
 
-    map.setCenter(defaultLatLng);
+    map.setCenter(hotelLatLng);
 
-    new google.maps.Marker({
-        position: defaultLatLng,
+    const marker = new google.maps.Marker({
+        position: hotelLatLng,
         map: map,
     });
 
-    var btn = $('#room_type_map_tab .btn-map-control-ui').get(0);
-    console.log(btn);
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(btn);
-
-    btn.addEventListener('click', function () {
-        console.log(1);
-        var directionsLink = 'https://www.google.com/maps/dir/?api=1&destination='+
-        defaultLatLng.lat+','+defaultLatLng.lng;
-        window.open(directionsLink, '_blank');
-    });
+    const uiContent = $('#room-info-map-ui-content .hotel-info-wrap').get(0);
+    map.controls[google.maps.ControlPosition.LEFT_TOP].push(uiContent);
 }
 
 function changeRoomTypeDemands() {
