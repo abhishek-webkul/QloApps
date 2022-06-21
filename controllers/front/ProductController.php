@@ -761,9 +761,29 @@ class ProductControllerCore extends FrontController
             $objHotelRoomType = new HotelRoomType($idRoomType);
             $objHotelBranchInfo = new HotelBranchInformation($objHotelRoomType->id_hotel, $this->context->language->id);
             if (Validate::isLoadedObject($objHotelBranchInfo)) {
+                $hotelImage = array();
+                $hotelImageLink = null;
+                if ($coverImage = HotelImage::getCover($objHotelBranchInfo->id)) {
+                    $hotelImage = $coverImage;
+                } else {
+                    $objHotelImage = new HotelImage();
+                    $hotelImages = $objHotelImage->getAllImagesByHotelId($objHotelBranchInfo->id);
+                    if ($hotelImages) {
+                        $hotelImage = $hotelImages[0];
+                    }
+                }
+
+                if ($hotelImage) {
+                    $hotelImagesBaseDir = _MODULE_DIR_.'hotelreservationsystem/views/img/hotel_img/';
+                    $hotelImageLink = $this->context->link->getMediaLink(
+                        $hotelImagesBaseDir.$hotelImage['hotel_image_id'].'.jpg'
+                    );
+                }
+
                 $this->context->smarty->assign(array(
                     'hotel' => $objHotelBranchInfo,
                     'id_hotel' => (int) $objHotelBranchInfo->id,
+                    'hotel_image_link' => $hotelImageLink,
                 ));
 
                 Media::addJsDef(array(
