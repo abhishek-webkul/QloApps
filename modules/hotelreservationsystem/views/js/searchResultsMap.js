@@ -27,6 +27,7 @@ function initMap() {
         zoom: 10,
         center: hotelLocation,
         disableDefaultUI: true,
+        fullscreenControl: true,
     });
 
     const marker = new google.maps.Marker({
