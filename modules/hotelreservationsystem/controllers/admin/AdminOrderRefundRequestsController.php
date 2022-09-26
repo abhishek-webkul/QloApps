@@ -448,7 +448,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                     // Generate voucher
                     if (Tools::isSubmit('generateDiscount') && !count($this->errors)) {
                         $cartrule = new CartRule();
-                        $language_ids = Language::getIDs((bool)$order);
+                        $language_ids = Language::getIDs((bool)$objOrder);
                         $cartrule->description = sprintf($this->l('Credit card slip for order #%d'), $objOrder->id);
                         foreach ($language_ids as $id_lang) {
                             // Define a temporary name
@@ -474,6 +474,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                         if (!$cartrule->add()) {
                             $this->errors[] = $this->errors('You cannot generate a voucher.');
                         } else {
+                            // reload updated $objOrderReturn from database
+                            $objOrderReturn = new OrderReturn($idOrderReturn);
                             $objOrderReturn->id_transaction = $cartrule->id;
                             $objOrderReturn->save();
                             // Update the voucher code and name

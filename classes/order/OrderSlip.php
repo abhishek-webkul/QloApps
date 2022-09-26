@@ -336,6 +336,7 @@ class OrderSlipCore extends ObjectModel
         $order_slip->{'total_products_tax_'.$inc_or_ex_1} = 0;
         $order_slip->{'total_products_tax_'.$inc_or_ex_2} = 0;
 
+        $total_products = array();
         foreach ($booking_list as &$booking) {
             $objHtlBooking = new HotelBookingDetail($booking['id_htl_booking']);
             $order_detail = new OrderDetail((int)$objHtlBooking->id_order_detail);
