@@ -68,6 +68,10 @@ class HotelBookingDetail extends ObjectModel
     const STATUS_CHECKED_IN = 2;
     const STATUS_CHECKED_OUT = 3;
 
+    // booking allotment types
+    const ALLOTMENT_AUTO = 1;
+    const ALLOTMENT_MANUAL = 2;
+
     public static $definition = array(
         'table' => 'htl_booking_detail',
         'primary' => 'id',
@@ -221,6 +225,7 @@ class HotelBookingDetail extends ObjectModel
      */
     public function getBookingData($params)
     {
+        $this->context = Context::getContext();
         // extract all keys and values of the array [$params] into variables and values
         extract($this->getBookingDataParams($params));
         if ($date_from && $date_to && $hotel_id) {
@@ -244,10 +249,17 @@ class HotelBookingDetail extends ObjectModel
                 $num_cart = 0;
                 $new_part_arr = array();
                 $booking_data = array();
+                $applyLosRestriction = true;
 
                 if ($search_partial) {
                     $this->partAvaiDates = array();
                     $this->allReqDates = $this->createDateRangeArray($date_from, $date_to, 1);
+                }
+
+                if (isset(Context::getContext()->employee->id)) {
+                    if (!Configuration::get('PS_LOS_RESTRICTION_BO')) {
+                        $applyLosRestriction = false;
+                    }
                 }
 
                 foreach ($room_types as $key => $room_type) {
@@ -256,6 +268,10 @@ class HotelBookingDetail extends ObjectModel
                     }
 
                     $total_rooms += $obj_room_info->getHotelRoomInfo($room_type['id_product'], $hotel_id, 1);
+
+                    // Get min & max  LOS
+                    $objRoomTypeRestriction = new HotelRoomTypeRestrictionDateRange();
+                    $losRestriction = $objRoomTypeRestriction->getRoomTypeLengthOfStay($room_type['id_product'], $date_from);
 
                     $obj_product = new Product((int) $room_type['id_product']);
                     $product_name = $obj_product->name[Configuration::get('PS_LANG_DEFAULT')];
@@ -305,7 +321,15 @@ class HotelBookingDetail extends ObjectModel
                     if ($search_unavai) {
                         $sql1 = 'SELECT `id_product`, `id_hotel`, `room_num`, `comment` AS `room_comment`
                                 FROM `'._DB_PREFIX_.'htl_room_information`
-                                WHERE `id_hotel`='.(int)$hotel_id.' AND `id_product` ='.(int)$room_type['id_product'].' AND `id_status` = '. HotelRoomInformation::STATUS_INACTIVE;
+                                WHERE `id_hotel`='.(int)$hotel_id.' AND `id_product` ='.(int)$room_type['id_product'].' AND (`id_status` = '. HotelRoomInformation::STATUS_INACTIVE;
+                        if ($applyLosRestriction) {
+                            $sql1 .= ' OR ( DATEDIFF(\''.$date_to.'\', \''.$date_from.'\') < '.(int)$losRestriction['min_los'];
+                            if ((int)$losRestriction['max_los']) {
+                                $sql1 .= ' OR DATEDIFF(\''.$date_to.'\', \''.$date_from.'\') > '.(int)$losRestriction['max_los'];
+                            }
+                            $sql1 .= ')';
+                        }
+                        $sql1 .= ')';
 
                         $sql2 = 'SELECT hri.`id_product`, hri.`id_hotel`, hri.`room_num`, hri.`comment` AS `room_comment`
                                 FROM `'._DB_PREFIX_.'htl_room_information` AS hri
@@ -353,7 +377,18 @@ class HotelBookingDetail extends ObjectModel
 
                         $joinAvailRoomSearch = '';
 
-                        $whereAvailRoomSearch = 'WHERE ri.`id_hotel`='.(int)$hotel_id.' AND ri.`id_product`='.(int)$room_type['id_product'].' AND ri.`id_status` != '. HotelRoomInformation::STATUS_INACTIVE .' AND ri.`id` NOT IN ('.$exclude_ids.')';
+                        $whereAvailRoomSearch = 'WHERE ri.`id_hotel`='.(int)$hotel_id.' AND ri.`id_product`='.(int)$room_type['id_product'].' AND ri.`id_status` != '. HotelRoomInformation::STATUS_INACTIVE;
+
+                        // Check min & max LOS restrictions
+                        if ($applyLosRestriction) {
+                            $whereAvailRoomSearch .= ' AND DATEDIFF(\''.$date_to.'\', \''.$date_from.'\') >= '.(int)$losRestriction['min_los'];
+                            // check max LOS restriction is greater than zero
+                            if ((int)$losRestriction['max_los']) {
+                                $whereAvailRoomSearch .= ' AND DATEDIFF(\''.$date_to.'\', \''.$date_from.'\') <= '.(int)$losRestriction['max_los'];
+                            }
+                        }
+
+                        $whereAvailRoomSearch .= ' AND ri.`id` NOT IN ('.$exclude_ids.')';
 
                         $groupByAvailRoomSearch = '';
                         $orderByAvailRoomSearch = '';
@@ -1210,38 +1245,72 @@ class HotelBookingDetail extends ObjectModel
         $old_date_from,
         $old_date_to,
         $new_date_from,
-        $new_date_to
+        $new_date_to,
+        $new_total_price = null
     ) {
         $rowByIdOrderIdRoom = Db::getInstance()->getRow('SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.' AND `id_order`='.(int)$id_order);
-        $numDays = $this->getNumberOfDays($old_date_from, $old_date_to);
-        $paidUnitRoomPriceTE = $rowByIdOrderIdRoom['total_price_tax_excl']/$numDays;
-        $paidUnitRoomPriceTI = $rowByIdOrderIdRoom['total_price_tax_incl']/$numDays;
-
+        $newTotalPriceTE = '';
+        $newTotalPriceTI = '';
         $newNumDays = $this->getNumberOfDays($new_date_from, $new_date_to);
-        $newTotalPriceTE = $paidUnitRoomPriceTE * $newNumDays;
-        $newTotalPriceTI = $paidUnitRoomPriceTI * $newNumDays;
-        //$total_price = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice($rowByIdOrderIdRoom['id_product'], $new_date_from, $new_date_to);
-        $table = 'htl_cart_booking_data';
-        $table1 = 'htl_booking_detail';
-        $num_days = $this->getNumberOfDays($new_date_from, $new_date_to);
-        $data_cart = array(
-            'date_from' => $new_date_from,
-            'date_to' => $new_date_to,
-            'quantity' => $num_days
+        if ($new_total_price) {
+            $newTotalPriceTE = $new_total_price['tax_excl'];
+            $newTotalPriceTI = $new_total_price['tax_incl'];
+        } else {
+            $oldNumDays = $this->getNumberOfDays($old_date_from, $old_date_to);
+            $unitRoomPriceTE = $rowByIdOrderIdRoom['total_price_tax_excl'] / $oldNumDays;
+            $unitRoomPriceTI = $rowByIdOrderIdRoom['total_price_tax_incl'] / $oldNumDays;
+            $newTotalPriceTE = $unitRoomPriceTE * $newNumDays;
+            $newTotalPriceTI = $unitRoomPriceTI * $newNumDays;
+        }
+
+        // update `total_paid_amount` on database
+        $totalPaidAmount = 0;
+        $isAdvancePayment = Db::getInstance()->getValue(
+            'SELECT o.`is_advance_payment`
+            FROM `'._DB_PREFIX_.'orders` o
+            WHERE o.`id_order` = '.(int) $id_order
         );
-        $data_order = array(
-            'date_from' => $new_date_from,
-            'date_to' => $new_date_to,
-            'total_price_tax_excl' => $newTotalPriceTE,
-            'total_price_tax_incl' => $newTotalPriceTI
+
+        if ($isAdvancePayment) {
+            $objHotelAdvancedPayment = new HotelAdvancedPayment();
+            $productAdvancePayment = $objHotelAdvancedPayment->getIdAdvPaymentByIdProduct($rowByIdOrderIdRoom['id_product']);
+
+            if (!$productAdvancePayment || (isset($productAdvancePayment['payment_type']) && $productAdvancePayment['payment_type'])) {
+                $totalPaidAmount = $objHotelAdvancedPayment->getRoomMinAdvPaymentAmount(
+                    $rowByIdOrderIdRoom['id_product'],
+                    $new_date_from,
+                    $new_date_to
+                );
+            }
+        } else {
+            $totalPaidAmount = $newTotalPriceTI;
+        }
+
+        $cart_booking = array(
+            'table' => 'htl_cart_booking_data',
+            'data' => array(
+                'date_from' => $new_date_from,
+                'date_to' => $new_date_to,
+                'quantity' => $newNumDays,
+            ),
+        );
+
+        $booking_detail = array(
+            'table' => 'htl_booking_detail',
+            'data' => array(
+                'date_from' => $new_date_from,
+                'date_to' => $new_date_to,
+                'total_price_tax_excl' => $newTotalPriceTE,
+                'total_price_tax_incl' => $newTotalPriceTI,
+                'total_paid_amount' => $totalPaidAmount,
+            ),
         );
 
         $where = 'id_order = '.(int)$id_order.' AND id_room = '.(int)$id_room.' AND date_from= \''.pSQL($old_date_from).
         '\' AND date_to = \''.pSQL($old_date_to).'\' AND `is_refunded`=0 AND `is_back_order`=0';
 
-        $result = Db::getInstance()->update($table, $data_cart, $where);
-
-        $result1 = Db::getInstance()->update($table1, $data_order, $where);
+        $result = Db::getInstance()->update($cart_booking['table'], $cart_booking['data'], $where);
+        $result &= Db::getInstance()->update($booking_detail['table'], $booking_detail['data'], $where);
 
         return $result;
     }
@@ -1397,7 +1466,7 @@ class HotelBookingDetail extends ObjectModel
     }
 
     /**
-     * [createQloAppsBookingByChannels create booking on Qloapps commig from different channels]
+     * [createQloAppsBookingByChannels create booking on QloApps commig from different channels]
      * @param  [array] $params [array containing details of orders]
      * @return [boolean] [true if order is created or returns false]
      */
@@ -1439,7 +1508,7 @@ class HotelBookingDetail extends ObjectModel
     }
 
     /**
-     * [createQloCustomerChannelCustomerInfo create customer in Qloapps from supplied information from channel manager]
+     * [createQloCustomerChannelCustomerInfo create customer in QloApps from supplied information from channel manager]
      * @param  [array] $params [array containg customer information]
      * @return [int|false]     [return customer Id if customer created successfully else returns false]
      */
@@ -1471,7 +1540,7 @@ class HotelBookingDetail extends ObjectModel
     }
 
     /**
-     * [createQloCustomerAddressByChannelCustomerInfo create customer's Address in Qloapps from supplied information from channel manager]
+     * [createQloCustomerAddressByChannelCustomerInfo create customer's Address in QloApps from supplied information from channel manager]
      * @param  [array] $params [array containg customer information]
      * @return [int|false]     [return customer address Id if address created successfully else returns false]
      */
@@ -1500,7 +1569,7 @@ class HotelBookingDetail extends ObjectModel
     }
 
     /**
-     * [createQloCartForBookingFromChannel create cart in Qloapps from supplied cart information from channel manager]
+     * [createQloCartForBookingFromChannel create cart in QloApps from supplied cart information from channel manager]
      * @param  [array] $params [array containg channel cart information]
      * @return [int|false]     [return cart Id if cart created successfully else returns false]
      */
@@ -1621,7 +1690,7 @@ class HotelBookingDetail extends ObjectModel
                     $obj_htl_cart_booking_data->id_product = $val_hotel_room_info['id_product'];
                     $obj_htl_cart_booking_data->id_room = $val_hotel_room_info['id_room'];
                     $obj_htl_cart_booking_data->id_hotel = $val_hotel_room_info['id_hotel'];
-                    $obj_htl_cart_booking_data->booking_type = 1;
+                    $obj_htl_cart_booking_data->booking_type = HotelBookingDetail::ALLOTMENT_AUTO;
                     $obj_htl_cart_booking_data->quantity = $num_day;
                     $obj_htl_cart_booking_data->date_from = $date_from;
                     $obj_htl_cart_booking_data->date_to = $date_to;
@@ -1832,6 +1901,22 @@ class HotelBookingDetail extends ObjectModel
             ),
         );
         return $pages;
+    }
+
+    public static function getAllAllotmentTypes()
+    {
+        $moduleInstance = Module::getInstanceByName('hotelreservationsystem');
+        $allotments = array(
+            array(
+                'id_allotment' => self::ALLOTMENT_AUTO,
+                'name' => $moduleInstance->l('Auto Allotment', 'hotelreservationsystem')
+            ),
+            array(
+                'id_allotment' => self::ALLOTMENT_MANUAL,
+                'name' => $moduleInstance->l('Manual Allotment', 'hotelreservationsystem')
+            ),
+        );
+        return $allotments;
     }
 
     // Webservice funcions

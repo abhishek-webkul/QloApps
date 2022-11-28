@@ -25,7 +25,7 @@
 <div id="login-panel">
 	<div id="login-header">
 		<h1 class="text-center">
-			<img id="logo" src="{$img_dir}prestashop@2x.png" width="123px" alt="PrestaShop" />
+			<img id="logo" src="{$img_dir}qloapps@2x.png" width="123px" alt="PrestaShop" />
 		</h1>
 		<div class="text-center">{$qloapps_version}</div>
 		<div id="error" class="hide alert alert-danger">
@@ -49,7 +49,7 @@
 		<div class="alert alert-warning">{$warningSslMessage}</div>
 		{/if}
 	</div>
-	<div id="shop-img"><img src="{$img_dir}preston-login@2x.png" alt="{$shop_name}" width="136px" height="136px" /></div>
+	<div id="shop-img"><img src="{$img_dir}qloapps-login@2x.png" alt="{$shop_name}" width="136px" height="136px" /></div>
 	<div class="flip-container">
 		<div class="flipper">
 			<div class="front panel">
@@ -74,7 +74,7 @@
 							</span>
 						</button>
 					</div>
-					<div class="form-group">
+					<div class="form-group login-actions">
 						<div id="remind-me" class="checkbox pull-left">
 							<label for="stay_logged_in">
 								<input name="stay_logged_in" type="checkbox" id="stay_logged_in" value="1"	tabindex="3"/>
@@ -100,7 +100,7 @@
 						</label>
 						<input type="text" name="email_forgot" id="email_forgot" class="form-control" autofocus="autofocus" tabindex="5" placeholder="&#xf0e0 test@example.com" />
 					</div>
-					<div class="panel-footer">
+					<div class="panel-footer login-actions">
 						<button type="button" href="#" class="btn btn-default show-login-form" tabindex="7">
 							<i class="icon-caret-left"></i>
 							{l s='Back to login'}
