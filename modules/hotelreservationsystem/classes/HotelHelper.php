@@ -527,6 +527,62 @@ class HotelHelper
         }
     }
 
+    public function saveDefaultHotelSettingsLinks()
+    {
+        $settingsLinks = array(
+            array(
+                'name' => 'General Settings',
+                'hint' => 'Configure Your Hotel general Settings using this option.',
+                'icon' => 'icon-cogs',
+                'link' => 'index.php?controller=AdminHotelGeneralSettings',
+            ),
+            array(
+                'name' => 'Order Restrict',
+                'hint' => 'Configure if you want to restrict orders till a specific date for your hotels.',
+                'icon' => 'icon-list-alt',
+                'link' => 'index.php?controller=AdminOrderRestrictSettings',
+            ),
+            array(
+                'name' => 'Advanced Price Rules',
+                'hint' => 'Here set advanced price rules for specific dates.',
+                'icon' => 'icon-cog',
+                'link' => 'index.php?controller=AdminHotelFeaturePricesSettings',
+            ),
+            array(
+                'name' => 'Additional Facilities',
+                'hint' => 'Here create additional facilities and their prices for room types.',
+                'icon' => 'icon-cog',
+                'link' => 'index.php?controller=AdminRoomTypeGlobalDemand',
+            ),
+        );
+
+        $languages = Language::getLanguages();
+        foreach ($settingsLinks as $key => $settingsLink) {
+            $name = array();
+            $hint = array();
+            foreach ($languages as $language) {
+                $name[$language['id_lang']] = $settingsLink['name'];
+                $hint[$language['id_lang']] = $settingsLink['hint'];
+            }
+
+            $objHotelSettingsLink = new HotelSettingsLink();
+            $objHotelSettingsLink->name = $name;
+            $objHotelSettingsLink->hint = $hint;
+            $objHotelSettingsLink->icon = $settingsLink['icon'];
+            $objHotelSettingsLink->link = $settingsLink['link'];
+            $objHotelSettingsLink->new_window = 0;
+            $objHotelSettingsLink->position = (int) $key;
+            $objHotelSettingsLink->unremovable = 1;
+            $objHotelSettingsLink->active = 1;
+
+            if (!$objHotelSettingsLink->save()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function saveAdvancedPaymentInfo($id_product)
     {
         $obj_adv_pmt = new HotelAdvancedPayment();
@@ -573,6 +629,7 @@ class HotelHelper
         $this->saveDummyHotelImages($htl_id);
         $this->saveDummyHotelFeatures($htl_id);
         $this->saveDummyProductsAndRelatedInfo($htl_id);
+        $this->saveDefaultHotelSettingsLinks();
 
         return true;
     }

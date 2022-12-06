@@ -25,7 +25,9 @@ class HotelSettingsLink extends ObjectModel
     public $hint;
     public $icon;
     public $link;
+    public $new_window;
     public $position;
+    public $unremovable;
     public $active;
     public $date_add;
     public $date_upd;
@@ -39,7 +41,9 @@ class HotelSettingsLink extends ObjectModel
             'hint' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'lang' => true, 'required' => true),
             'icon' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml', 'required' => true),
             'link' => array('type' => self::TYPE_STRING, 'validate' => 'isUrl', 'required' => true),
+            'new_window' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'position' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
+            'unremovable' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'active' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate', 'copy_post' => false),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate', 'copy_post' => false),
@@ -54,6 +58,39 @@ class HotelSettingsLink extends ObjectModel
             ON hsll.`id_settings_link` = hsl.`id_settings_link` AND hsll.`id_lang` = '.(int) Context::getContext()->language->id.
             ($active ? ' WHERE hsl.`active` = 1' : '').'
             ORDER BY hsl.`position`'
+        );
+    }
+
+    public function generateLink($link = null, $id_employee = null)
+    {
+        if ($link) {
+            $this->link = $link;
+        }
+
+        $context = Context::getContext();
+        if ($this->link == '../') {
+            return $context->shop->getBaseURL();
+        } else {
+            preg_match('/controller=(.+)(&.+)?$/', $this->link, $adminTab);
+            if (isset($adminTab[1])) {
+                if (strpos($adminTab[1], '&')) {
+                    $adminTab[1] = substr($adminTab[1], 0, strpos($adminTab[1], '&'));
+                }
+
+                $token = Tools::getAdminToken($adminTab[1].(int) Tab::getIdFromClassName($adminTab[1]).(int) ($id_employee ? $id_employee : $context->employee->id));
+                return $link.'&token='.$token;
+            }
+        }
+
+        return $link;
+    }
+
+    public function getUnremovableLinks()
+    {
+        return Db::getInstance()->executeS(
+            'SELECT *
+            FROM `'._DB_PREFIX_.'htl_settings_link` hsl
+            WHERE hsl.`unremovable` = 1'
         );
     }
 

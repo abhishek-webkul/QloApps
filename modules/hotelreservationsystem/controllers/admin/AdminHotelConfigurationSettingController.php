@@ -12,6 +12,7 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
         $this->_defaultOrderBy = 'position';
         $this->lang = true;
         $this->bootstrap = true;
+        $this->list_no_link = true;
 
         parent::__construct();
 
@@ -28,12 +29,14 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
             'name' => array(
                 'title' => $this->l('Name'),
                 'hint' => $this->l('Name of the settings link.'),
-                'align' => 'center',
+                'align' => 'left',
+                'class' => 'fixed-width-xxl',
             ),
-            'hint' => array(
-                'title' => $this->l('Hint'),
-                'hint' => $this->l('Hint of the settings link.'),
-                'align' => 'center',
+            'link' => array(
+                'title' => $this->l('Link'),
+                'hint' => $this->l('Link of the page where admin is redirected.'),
+                'align' => 'left',
+                'callback' => 'displayColumnLink',
             ),
             'icon' => array(
                 'title' => $this->l('Icon'),
@@ -41,11 +44,22 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
                 'align' => 'center',
                 'callback' => 'displayColumnIcon',
             ),
+            'new_window' => array(
+                'title' => $this->l('New Window'),
+                'hint' => $this->l('Active if link is opened in a new window.'),
+                'align' => 'center',
+                'active' => 'new_window',
+                'ajax' => true,
+                'orderby' => false,
+                'type' => 'bool',
+                'class' => 'fixed-width-sm',
+            ),
             'position' => array(
                 'title' => $this->l('Position'),
                 'filter_key' => 'a!position',
                 'position' => 'position',
                 'align' => 'center',
+                'class' => 'fixed-width-md',
             ),
             'active' => array(
                 'title' => $this->l('Status'),
@@ -53,11 +67,10 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
                 'type' => 'bool',
                 'active' => 'status',
                 'align' => 'center',
+                'class' => 'fixed-width-lg',
                 'filter_key' => 'a!active',
             ),
         );
-
-        $this->list_no_link = true;
 
         $this->bulk_actions = array(
             'enableSelection' => array(
@@ -77,17 +90,30 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
                 'icon' => 'icon-trash'
             )
         );
-
-        $this->tpls_base_dir = $this->module->getLocalPath().'views/templates/admin/'.$this->tpl_folder;
     }
 
     public function displayColumnIcon($icon)
     {
         $tpl = $this->context->smarty->createTemplate(
-            $this->tpls_base_dir.'helpers/list/link-icon.tpl'
+            $this->module->getLocalPath().'views/templates/admin/'.$this->tpl_folder.'helpers/list/link-icon.tpl'
         );
 
         $tpl->assign('icon', $icon);
+
+        return $tpl->fetch();
+    }
+
+    public function displayColumnLink($link)
+    {
+        $this->loadObject(true);
+        $tpl = $this->context->smarty->createTemplate(
+            $this->module->getLocalPath().'views/templates/admin/'.$this->tpl_folder.'helpers/list/link-page.tpl'
+        );
+
+        $tpl->assign(array(
+            'saved_link' => $link,
+            'generated_link' => $this->object->generateLink($link),
+        ));
 
         return $tpl->fetch();
     }
@@ -103,6 +129,7 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
                 'desc' => $this->l('Manage links'),
             );
         } elseif ($this->display == 'list') {
+            $this->page_header_toolbar_title = $this->l('Settings Links');
             $this->page_header_toolbar_btn['new'] = array(
                 'href' => self::$currentIndex.'&add'.$this->table.'&token='.$this->token,
                 'desc' => $this->l('Add new link'),
@@ -129,6 +156,16 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
     {
         $this->context->smarty->assign('icon', 'icon-list');
         $this->toolbar_title = $this->l('Settings Links');
+
+        $this->loadObject(true);
+        $unremovableLinks = $this->object->getUnremovableLinks();
+        if (is_array($unremovableLinks) && count($unremovableLinks)) {
+            $ids = array();
+            foreach ($unremovableLinks as $unremovableLink) {
+                $ids[] = $unremovableLink['id_settings_link'];
+            }
+            $this->addRowActionSkipList('delete', $ids);
+        }
 
         return parent::renderList();
     }
@@ -168,12 +205,13 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
 
     public function renderView()
     {
+        $settingsLinks = $this->object->getAll();
+        foreach ($settingsLinks as $index => &$settingsLink) {
+            $settingsLink['generated_link'] = $this->object->generateLink($settingsLink['link']);
+        }
+
         $this->tpl_view_vars = array(
-            'feature_price_setting_link' => $this->context->link->getAdminLink('AdminHotelFeaturePricesSettings'),
-            'general_setting_link' => $this->context->link->getAdminLink('AdminHotelGeneralSettings'),
-            'order_restrict_setting_link' => $this->context->link->getAdminLink('AdminOrderRestrictSettings'),
-            'additional_demand_setting_link' => $this->context->link->getAdminLink('AdminRoomTypeGlobalDemand'),
-            'settings_links' => $this->object->getAll(),
+            'settings_links' => $settingsLinks,
         );
 
         return parent::renderView();
@@ -204,8 +242,8 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
                                 '&update'.$this->table.'&'.$this->identifier.'='.$newId);
                             }
                         } else {
+                            self::$currentIndex .= '&display=list';
                             if ($idHotelSettingsLink) {
-                                self::$currentIndex .= '&display=list';
                                 Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
                             } else {
                                 Tools::redirectAdmin(self::$currentIndex.'&conf=3&token='.$this->token);
@@ -217,6 +255,46 @@ class AdminHotelConfigurationSettingController extends ModuleAdminController
         }
 
         parent::postProcess();
+    }
+
+    public function processStatus()
+    {
+        self::$currentIndex .= '&display=list';
+        return parent::processStatus();
+    }
+
+    public function processDelete()
+    {
+        self::$currentIndex .= '&display=list';
+        return parent::processDelete();
+    }
+
+    public function processBulkDelete()
+    {
+        self::$currentIndex .= '&display=list';
+        return parent::processBulkDelete();
+    }
+
+    public function ajaxProcessNewWindowHtlSettingsLink()
+    {
+        $response = array(
+            'success' => 0,
+            'text' => $this->l('An error occurred while updating object.')
+        );
+
+        $idSettingsLink = Tools::getValue('id_settings_link');
+        $objHotelSettingsLink = new HotelSettingsLink($idSettingsLink);
+
+        if (Validate::isLoadedObject($objHotelSettingsLink)) {
+            $objHotelSettingsLink->new_window = (int) !$objHotelSettingsLink->new_window;
+
+            if ($objHotelSettingsLink->save()) {
+                $response['success'] = 1;
+                $response['text'] = $this->l('The object has been updated successfully.');
+            }
+        }
+
+        $this->ajaxDie(json_encode($response));
     }
 
     public function ajaxProcessUpdatePositions()

@@ -101,7 +101,7 @@
                                         </button>
                                         <ul class="dropdown-menu">
                                             {foreach from=$languages item=language}
-                                                <li><a href="javascript:hideOtherLanguage({$language.id_lang});" tabindex="-1">{$language.hint}</a></li>
+                                                <li><a href="javascript:hideOtherLanguage({$language.id_lang});" tabindex="-1">{$language.name}</a></li>
                                             {/foreach}
                                         </ul>
                                     </div>
@@ -131,6 +131,25 @@
                 </label>
                 <div class="col-lg-5">
                     <input name="link" class="form-control" value="{$currentTab->getFieldValue($currentObject, 'link')|escape}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-lg-3">
+                    <span class="label-tooltip" data-toggle="tooltip" data-html="true" title="{l s='Enable to open the link in a new window.' mod='hotelreservationsystem'}">
+                        {l s='Open in new window' mod='hotelreservationsystem'}
+                    </span>
+                </label>
+                <div class="col-lg-9">
+                    <span class="switch prestashop-switch fixed-width-lg">
+                        <input type="radio" name="new_window" id="new_window_on" value="1"
+                            {if $currentTab->getFieldValue($currentObject, 'new_window')|intval}checked="checked"{/if}>
+                        <label for="new_window_on">{l s='Yes' mod='hotelreservationsystem'}</label>
+                        <input type="radio" name="new_window" id="new_window_off" value="0"
+                            {if !$currentTab->getFieldValue($currentObject, 'new_window')|intval}checked="checked"{/if}>
+                        <label for="new_window_off">{l s='No' mod='hotelreservationsystem'}</label>
+                        <a class="slide-button btn"></a>
+                    </span>
                 </div>
             </div>
         </div>
