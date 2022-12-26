@@ -130,8 +130,9 @@ class Blockcart extends Module
         $totalToPay = $params['cart']->getOrderTotal($useTax);
         $tax_cost = 0;
         if ($showTax) {
+            $totalToPayWithTaxes = !$useTax ? $params['cart']->getOrderTotal(true) : $totalToPay;
             $totalToPayWithoutTaxes = $params['cart']->getOrderTotal(false);
-            $tax_cost = Tools::displayPrice($totalToPay - $totalToPayWithoutTaxes, $currency);
+            $tax_cost = Tools::displayPrice($totalToPayWithTaxes - $totalToPayWithoutTaxes, $currency);
         }
 
         // The cart content is altered for display
