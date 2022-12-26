@@ -575,9 +575,54 @@ class HotelReservationSystem extends Module
                 'actionObjectProfileDeleteBefore',
                 'actionObjectGroupDeleteBefore',
                 'actionOrderStatusPostUpdate',
+                'actionAuthentication',
+                'actionCustomerAccountAdd',
+                'actionCartSave',
                 'displayLeftColumn',
             )
         );
+    }
+
+    public function hookActionAuthentication($params)
+    {
+        $this->manageIdGuest($params);
+    }
+
+    public function hookActionCustomerAccountAdd($params)
+    {
+        $this->manageIdGuest($params);
+    }
+
+    public function hookActionCartSave()
+    {
+        if (Validate::isLoadedObject($this->context->cart)) {
+            HotelCartBookingData::updateIdGuestByIdCart(
+                $this->context->cart->id,
+                $this->context->cookie->id_guest
+            );
+        }
+    }
+
+    public function manageIdGuest($params)
+    {
+        // update or merge id_guest with id_customer during login and account creation
+        $objGuest = new Guest($params['cookie']->id_guest);
+        $idCustomer = (int) $params['cookie']->id_customer;
+
+        $idGuest = (int) Guest::getFromCustomer($idCustomer);
+        if ((int) $idGuest) {
+            // new id_guest is merged with the old one when its connecting to an account
+            $objGuest->mergeWithCustomer($idGuest, $idCustomer);
+            $params['cookie']->id_guest = $objGuest->id;
+        } else {
+            // id_guest is duplicated if it has multiple customer accounts
+            $method = ($objGuest->id_customer) ? 'add' : 'update';
+            $objGuest->id_customer = $idCustomer;
+            $objGuest->$method();
+        }
+
+        $params['cart']->id_guest = $params['cookie']->id_guest;
+        $params['cart']->save();
     }
 
     public function uninstallTab()

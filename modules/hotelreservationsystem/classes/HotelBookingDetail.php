@@ -1585,6 +1585,7 @@ class HotelBookingDetail extends ObjectModel
             $customer = new Customer((int)$idCustomer);
             $this->context->customer = $customer;
             $this->context->cart->id_customer = $idCustomer;
+            $this->context->cart->id_guest = $this->context->cookie->id_guest;
             if (Validate::isLoadedObject($this->context->cart) && $this->context->cart->OrderExists()) {
                 return;
             }
@@ -1628,6 +1629,7 @@ class HotelBookingDetail extends ObjectModel
         $this->context = Context::getContext();
         $this->errors = array();
         $id_cart = $params['id_cart'];
+        $id_guest = $this->context->cart->id_guest;
         $date_from = date("Y-m-d", strtotime($params['date_from']));
         $date_to = date("Y-m-d", strtotime($params['date_to']));
         $id_product = $params['id_room_type'];
@@ -1653,7 +1655,7 @@ class HotelBookingDetail extends ObjectModel
                 }
                 /*END*/
                 $obj_booking_dtl = new HotelBookingDetail();
-                $hotel_room_data = $obj_booking_dtl->DataForFrontSearch($date_from, $date_to, $id_hotel, $id_product, 1, 0, 0, -1, 0, 0, $id_cart, $this->context->cookie->id_guest);
+                $hotel_room_data = $obj_booking_dtl->DataForFrontSearch($date_from, $date_to, $id_hotel, $id_product, 1, 0, 0, -1, 0, 0, $id_cart, $id_guest);
                 $total_available_rooms = $hotel_room_data['stats']['num_avail'];
 
                 if ($total_available_rooms < $params['req_qty']) {
@@ -1684,7 +1686,7 @@ class HotelBookingDetail extends ObjectModel
                 if ($chkQty < $params['req_qty']) {
                     $obj_htl_cart_booking_data = new HotelCartBookingData();
                     $obj_htl_cart_booking_data->id_cart = $this->context->cart->id;
-                    $obj_htl_cart_booking_data->id_guest = $this->context->cookie->id_guest;
+                    $obj_htl_cart_booking_data->id_guest = $this->context->cart->id_guest;
                     $obj_htl_cart_booking_data->id_customer = $id_customer;
                     $obj_htl_cart_booking_data->id_currency = $id_currency;
                     $obj_htl_cart_booking_data->id_product = $val_hotel_room_info['id_product'];
