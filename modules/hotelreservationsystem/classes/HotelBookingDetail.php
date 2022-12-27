@@ -1686,7 +1686,7 @@ class HotelBookingDetail extends ObjectModel
                 if ($chkQty < $params['req_qty']) {
                     $obj_htl_cart_booking_data = new HotelCartBookingData();
                     $obj_htl_cart_booking_data->id_cart = $this->context->cart->id;
-                    $obj_htl_cart_booking_data->id_guest = $this->context->cart->id_guest;
+                    $obj_htl_cart_booking_data->id_guest = $id_guest;
                     $obj_htl_cart_booking_data->id_customer = $id_customer;
                     $obj_htl_cart_booking_data->id_currency = $id_currency;
                     $obj_htl_cart_booking_data->id_product = $val_hotel_room_info['id_product'];
