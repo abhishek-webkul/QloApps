@@ -747,7 +747,7 @@ class AdminOrdersControllerCore extends AdminController
                     $objOrderReturn = new OrderReturn();
                     $objOrderReturn->id_customer = $order->id_customer;
                     $objOrderReturn->id_order = $order->id;
-                    $objOrderReturn->state = 1;
+                    $objOrderReturn->state = OrderReturnState::ORDER_RETRUN_FIRST_STATUS;
                     $objOrderReturn->by_admin = 1;
                     $objOrderReturn->question = $refundReason;
                     $objOrderReturn->save();
@@ -1511,6 +1511,7 @@ class AdminOrdersControllerCore extends AdminController
         // hotel booking statuses
         $htlOrderStatus = HotelBookingDetail::getAllHotelOrderStatus();
 
+        // ddd(OrderReturn::getOrdersReturn($order->id_customer, $order->id));
         $this->tpl_view_vars = array(
             // refund info
             'refund_allowed' => (int) $order->isReturnable(),

@@ -34,10 +34,13 @@ class AdminSlipControllerCore extends AdminController
         $this->bootstrap = true;
         $this->table = 'order_slip';
         $this->className = 'OrderSlip';
+        $this->list_no_link = true;
 
-        $this->_select = ' o.`id_shop`';
+        $this->_select = ' a.`redeem_status` AS `redeem_status_2` o.`id_shop`';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'orders o ON (o.`id_order` = a.`id_order`)';
         $this->_group = ' GROUP BY a.`id_order_slip`';
+
+        $this->addRowAction('statusChange');
 
         $this->fields_list = array(
             'id_order_slip' => array(
@@ -63,7 +66,26 @@ class AdminSlipControllerCore extends AdminController
                 'callback' => 'printPDFIcons',
                 'orderby' => false,
                 'search' => false,
-                'remove_onclick' => true)
+                'remove_onclick' => true
+            ),
+            'redeem_status' => array(
+                'title' => $this->l('Status'),
+                'type' => 'select',
+                'list' => array(
+                    OrderSlip::REDEEM_STATUS_ACTIVE => $this->l('Active'),
+                    OrderSlip::REDEEM_STATUS_REDEEMED => $this->l('Redeemed'),
+                ),
+                'align' => 'center',
+                'filter_key' => 'a!redeem_status',
+                'callback' => 'displayRedeemStatus',
+                'class' => 'fixed-width-md',
+            ),
+            'date_upd' => array(
+                'title' => $this->l('Voucher'),
+                'align' => 'center',
+                'callback' => 'printVoucherIcons',
+                'class' => 'fixed-width-lg',
+            ),
         );
 
         $this->_select = 'a.id_order_slip AS id_pdf';
@@ -87,6 +109,11 @@ class AdminSlipControllerCore extends AdminController
         parent::__construct();
 
         $this->_where = Shop::addSqlRestriction(false, 'o');
+
+        $this->cacheRedeemStatus = array();
+
+        $this->_conf[101] = $this->l('The voucher has been generated and email has been sent to the customer.');
+        $this->_conf[102] = $this->l('The voucher has been generated but email could not be sent to the customer.');
     }
 
     public function initPageHeaderToolbar()
@@ -162,6 +189,65 @@ class AdminSlipControllerCore extends AdminController
         }
     }
 
+    public function processGenerateVoucher()
+    {
+        $idOrderSlip = Tools::getValue('id_order_slip');
+        $objOrderSlip = new OrderSlip($idOrderSlip);
+
+        if (!Validate::isLoadedObject($objOrderSlip)) {
+            $this->errors[] = $this->l('The credit slip can not be loaded.');
+        } elseif ($objOrderSlip->redeem_status != OrderSlip::REDEEM_STATUS_ACTIVE) {
+            $this->errors[] = $this->l('The voucher code for this credit slip has already been generated.');
+        } else {
+            $objOrder = new Order($objOrderSlip->id_order);
+            $objCustomer = new Customer($objOrderSlip->id_customer);
+
+            if (!Validate::isLoadedObject($objOrder)) {
+                $this->errors[] = $this->l('The related order for this credit slip can not be loaded.');
+            }
+
+            if (!Validate::isLoadedObject($objCustomer)) {
+                $this->errors[] = $this->l('The related customer for this credit slip can not be loaded.');
+            }
+        }
+
+        if (!count($this->errors)) {
+            if ($idCartRule = $objOrderSlip->generateVoucher()) {
+                $objCartRule = new CartRule($idCartRule);
+                $objCustomer = new Customer($objCartRule->id_customer);
+
+                $creditSlipPrefix = Configuration::get('PS_CREDIT_SLIP_PREFIX', $this->context->language->id);
+                $creditSlipID = sprintf(('%1$s%2$06d'), $creditSlipPrefix, (int) $objOrderSlip->id);
+
+                $objCurrency = new Currency($objCartRule->reduction_currency, $this->context->language->id);
+                $mailVars['{firstname}'] = $objCustomer->firstname;
+                $mailVars['{lastname}'] = $objCustomer->lastname;
+                $mailVars['{credit_slip_id}'] = $creditSlipID;
+                $mailVars['{voucher_code}'] = $objCartRule->code;
+                $mailVars['{voucher_amount}'] = Tools::displayPrice($objCartRule->reduction_amount, $objCurrency, false);
+
+                $mailStatus = Mail::Send(
+                    $this->context->language->id,
+                    'credit_slip_voucher',
+                    sprintf(Mail::l('New voucher for your credit slip #%s', $this->context->language->id), $creditSlipID),
+                    $mailVars,
+                    $objCustomer->email,
+                    $objCustomer->firstname.' '.$objCustomer->lastname,
+                    null,
+                    null,
+                    null,
+                    null,
+                    _PS_MAIL_DIR_,
+                    true
+                );
+
+                Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token.'&conf='.($mailStatus ? 101 : 102));
+            }
+
+            $this->errors[] = $this->l('Something went wrong while creating voucher.');
+        }
+    }
+
     public function initContent()
     {
         $this->initTabModuleList();
@@ -201,5 +287,43 @@ class AdminSlipControllerCore extends AdminController
         ));
 
         return $this->createTemplate('_print_pdf_icon.tpl')->fetch();
+    }
+
+    public function displayRedeemStatus($redeemStatus, $row)
+    {
+        $this->context->smarty->assign(array(
+            'redeem_status' => $redeemStatus,
+        ));
+
+        return $this->createTemplate('_redeem_status.tpl')->fetch();
+    }
+
+    public function printVoucherIcons($echo, $row)
+    {
+        if ($row['redeem_status'] != OrderSlip::REDEEM_STATUS_REDEEMED
+            && $row['id_cart_rule']
+        ) {
+            $this->context->smarty->assign(array(
+                'id_cart_rule' => (int) $row['id_cart_rule'],
+            ));
+
+            return $this->createTemplate('_print_voucher_icon.tpl')->fetch();
+        }
+
+        return '--';
+    }
+
+    public function displayStatusChangeLink($token = null, $id)
+    {
+        $objOrderSlip = new OrderSlip($id);
+        $statusChangeLink = self::$currentIndex.'&'.$this->identifier.'='.$id.'&action=generateVoucher'.
+        '&token='.($token != null ? $token : $this->token);
+
+        $this->context->smarty->assign(array(
+            'redeem_status' => $objOrderSlip->redeem_status,
+            'status_change_link' => $statusChangeLink,
+        ));
+
+        return $this->createTemplate('_redeem_status_link.tpl')->fetch();
     }
 }
