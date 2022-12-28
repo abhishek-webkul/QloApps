@@ -42,7 +42,7 @@ class QloBlockContact extends Module
     {
         if (!parent::install()
             || !Configuration::updateValue('QBC_PHONE', '')
-            || !Configuration::updateValue('QBC_EMAIL', '')
+            || !Configuration::updateValue('QBC_EMAIL', Configuration::get('PS_SHOP_EMAIL'))
             || !$this->registerHook('actionFrontControllerSetMedia')
             || !$this->registerHook('displayNav')
             || !$this->registerHook('displayExternalNavigationHook')
