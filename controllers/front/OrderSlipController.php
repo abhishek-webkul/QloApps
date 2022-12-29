@@ -61,8 +61,8 @@ class OrderSlipControllerCore extends FrontController
             $objOrderSlip = new OrderSlip($idOrderSlip);
             if (!Validate::isLoadedObject($objOrderSlip)) {
                 $this->errors[] = Tools::displayError('The credit slip is invalid.');
-            } elseif ($objOrderSlip->generated) {
-                $this->errors[] = Tools::displayError('The voucher code for this credit slip has already been generated.');
+            } elseif ($objOrderSlip->redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED) {
+                $this->errors[] = Tools::displayError('The credit slip has already been redeemed.');
             } elseif ($objOrderSlip->id_customer != $this->context->customer->id) {
                 $this->errors[] = Tools::displayError('Fatal error.');
             }
