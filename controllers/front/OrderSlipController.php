@@ -64,39 +64,11 @@ class OrderSlipControllerCore extends FrontController
             } elseif ($objOrderSlip->redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED) {
                 $this->errors[] = Tools::displayError('The credit slip has already been redeemed.');
             } elseif ($objOrderSlip->id_customer != $this->context->customer->id) {
-                $this->errors[] = Tools::displayError('Fatal error.');
+                $this->errors[] = Tools::displayError('Invalid request.');
             }
 
             if (!count($this->errors)) {
-                if ($idCartRule = $objOrderSlip->generateVoucher()) {
-                    $objCartRule = new CartRule($idCartRule);
-                    $objCustomer = new Customer($objCartRule->id_customer);
-
-                    $creditSlipPrefix = Configuration::get('PS_CREDIT_SLIP_PREFIX', $this->context->language->id);
-                    $creditSlipID = sprintf(('%1$s%2$06d'), $creditSlipPrefix, (int) $objOrderSlip->id);
-
-                    $objCurrency = new Currency($objCartRule->reduction_currency, $this->context->language->id);
-                    $mailVars['{firstname}'] = $objCustomer->firstname;
-                    $mailVars['{lastname}'] = $objCustomer->lastname;
-                    $mailVars['{credit_slip_id}'] = $creditSlipID;
-                    $mailVars['{voucher_code}'] = $objCartRule->code;
-                    $mailVars['{voucher_amount}'] = Tools::displayPrice($objCartRule->reduction_amount, $objCurrency, false);
-
-                    Mail::Send(
-                        $this->context->language->id,
-                        'credit_slip_voucher',
-                        sprintf(Mail::l('New voucher for your credit slip #%s', $this->context->language->id), $creditSlipID),
-                        $mailVars,
-                        $objCustomer->email,
-                        $objCustomer->firstname.' '.$objCustomer->lastname,
-                        null,
-                        null,
-                        null,
-                        null,
-                        _PS_MAIL_DIR_,
-                        true
-                    );
-
+                if ($objOrderSlip->generateVoucher()) {
                     Tools::redirect($this->context->link->getPageLink(
                         $this->php_self,
                         $this->ssl,

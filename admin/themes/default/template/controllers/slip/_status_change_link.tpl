@@ -1,5 +1,5 @@
 {**
- * 2010-2022 Webkul.
+ * 2010-2023 Webkul.
  *
  * NOTICE OF LICENSE
  *
@@ -17,6 +17,7 @@
  * @license LICENSE.txt
  *}
 
- <a class="btn btn-link" href="{$link->getAdminLink('AdminCartRules')|escape:'html':'UTF-8'}&updatecart_rule&id_cart_rule={$id_cart_rule}" target="_blank">
- #{$id_cart_rule}
+<a href="{$status_change_link|escape:'html':'UTF-8'}" title="{l s='Change Status'}">
+    <i class="icon-refresh"></i>
+    {l s='Change Status'}
 </a>

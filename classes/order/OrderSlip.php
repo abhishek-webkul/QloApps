@@ -27,7 +27,7 @@
 class OrderSlipCore extends ObjectModel
 {
     /** @var int */
-    public $id;
+    public $id_order_slip;
 
     /** @var int */
     public $id_customer;
@@ -558,7 +558,7 @@ class OrderSlipCore extends ObjectModel
     /**
      * generate voucher and return id of the created rule if successful, false otherwise
      */
-    public function generateVoucher()
+    public function generateVoucher($sendMail = true)
     {
         if (!Validate::isLoadedObject($this)) {
             return false;
@@ -583,10 +583,7 @@ class OrderSlipCore extends ObjectModel
         $idsLanguage = Language::getIDs();
 
         $creditSlipPrefix = Configuration::get('PS_CREDIT_SLIP_PREFIX', $context->language->id);
-        $creditSlipID = sprintf(('%1$s%2$06d'), $creditSlipPrefix, (int) $this->id);
-
-        // set temporary voucher code to get unique cart rule id
-        $voucherCodeTemp = 'V0C'.(int) ($objOrder->id_customer).'O'.(int) ($objOrder->id);
+        $creditSlipID = sprintf(('%1$s%2$06d'), $creditSlipPrefix, (int) $this->id_order_slip);
 
         $dateFrom = $this->date_add;
         $dateTo = date('Y-m-d H:i:s', strtotime($dateFrom) + (3600 * 24 * 365.25)); /* 1 year */
@@ -596,7 +593,7 @@ class OrderSlipCore extends ObjectModel
         }
 
         $objCartRule->description = sprintf('Order: #%s', $objOrder->id);
-        $objCartRule->code = $voucherCodeTemp;
+        $objCartRule->code = 'CS'.(int) ($this->id_order_slip).'C'.(int) ($objCustomer->id).'O'.(int) ($objOrder->id);
         $objCartRule->quantity = 1;
         $objCartRule->quantity_per_user = 1;
         $objCartRule->id_customer = $objCustomer->id;
@@ -613,15 +610,38 @@ class OrderSlipCore extends ObjectModel
             return false;
         }
 
-        $idCartRule = (int) $objCartRule->id;
-        // now set unique voucher code using cart rule id
-        $objCartRule->code = 'V'.(int) ($idCartRule).'C'.(int) ($objOrder->id_customer).'O'.(int) ($objOrder->id);
-        $objCartRule->save();
-
         $this->redeem_status = self::REDEEM_STATUS_REDEEMED;
-        $this->id_cart_rule = (int) $idCartRule;
+        $this->id_cart_rule = (int) $objCartRule->id;
+        $this->save();
 
-        return $this->save() ? (int) $idCartRule : false;
+        if ($sendMail) {
+            $objCartRule = new CartRule($this->id_cart_rule);
+            $objCustomer = new Customer($objCartRule->id_customer);
+
+            $objCurrency = new Currency($objCartRule->reduction_currency, $context->language->id);
+            $mailVars['{firstname}'] = $objCustomer->firstname;
+            $mailVars['{lastname}'] = $objCustomer->lastname;
+            $mailVars['{credit_slip_id}'] = $creditSlipID;
+            $mailVars['{voucher_code}'] = $objCartRule->code;
+            $mailVars['{voucher_amount}'] = Tools::displayPrice($objCartRule->reduction_amount, $objCurrency, false);
+
+            Mail::Send(
+                $context->language->id,
+                'credit_slip_voucher',
+                sprintf(Mail::l('New voucher for your credit slip #%s', $context->language->id), $creditSlipID),
+                $mailVars,
+                $objCustomer->email,
+                $objCustomer->firstname.' '.$objCustomer->lastname,
+                null,
+                null,
+                null,
+                null,
+                _PS_MAIL_DIR_,
+                true
+            );
+        }
+
+        return $this->id_cart_rule;
     }
 
     public function getWsOrderSlipDetails()

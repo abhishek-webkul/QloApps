@@ -448,10 +448,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                                 (int)$objOrder->id_shop
                             );
                         }
-                    }
-
-                    // Generate voucher
-                    if (Tools::isSubmit('generateDiscount') && !count($this->errors)) {
+                    } elseif (Tools::isSubmit('generateDiscount') && !count($this->errors)) {
+                        // Generate voucher
                         $cartrule = new CartRule();
                         $language_ids = Language::getIDs();
                         $cartrule->description = sprintf($this->l('Voucher for order #%d'), $objOrder->id);

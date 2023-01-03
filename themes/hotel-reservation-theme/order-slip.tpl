@@ -49,8 +49,8 @@
 					<th data-sort-ignore="true" class="item">{l s='Order'}</th>
 					<th class="item">{l s='Date issued'}</th>
 					<th data-sort-ignore="true" data-hide="phone">{l s='View credit slip'}</th>
-					<th data-sort-ignore="true" data-hide="phone">{l s='Status'}</th>
-					<th data-sort-ignore="true" class="last_item">{l s='Actions'}</th>
+					<th data-sort-ignore="true">{l s='Status'}</th>
+					<th data-sort-ignore="true" data-hide="phone" class="last_item">{l s='Actions'}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -82,12 +82,14 @@
 							{/if}
 						</td>
 						<td>
-							{if $slip.redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED}
-								<span class="badge badge-danger">{l s='Voucher Generated'}</span>
-							{else}
+							{if $slip.redeem_status == OrderSlip::REDEEM_STATUS_ACTIVE && !$slip.id_cart_rule}
 								<a href="{$link->getPageLink('order-slip', true, NULL, "generateVoucher=1&id_order_slip={$slip.id_order_slip|intval}")|escape:'html':'UTF-8'}" title="{l s='Generate voucher for credit slip '} #{Configuration::get('PS_CREDIT_SLIP_PREFIX', $lang_id)}{$slip.id_order_slip|string_format:"%06d"}">
 									<u>{l s='Generate Voucher'}</u>
 								</a>
+							{elseif $slip.redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED && $slip.id_cart_rule}
+								<span class="badge badge-danger">{l s='Voucher Generated'}</span>
+							{elseif $slip.redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED && !$slip.id_cart_rule}
+								--
 							{/if}
 						</td>
 					</tr>
