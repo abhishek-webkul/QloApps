@@ -971,16 +971,16 @@
 									{capture name=refund_status}
 										{if isset($return_info.payment_mode) && $return_info.payment_mode != ''}{l s='Payment Mode: '}{$return_info.payment_mode}<br/>{/if}
 										{if isset($return_info.id_transaction) && $return_info.id_transaction != ''}{l s='Transaction ID: '}{$return_info.id_transaction}<br/>{/if}
-										{if isset($return_info.id_object) && isset($return_info.object_type) && $return_info.id_object && $return_info.object_type}
-											{if $return_info.object_type == OrderReturn::OBJECT_TYPE_CART_RULE}
+										{if isset($return_info.id_return_type) && isset($return_info.return_type) && $return_info.id_return_type && $return_info.return_type}
+											{if $return_info.return_type == OrderReturn::RETURN_TYPE_CART_RULE}
 												{l s='Voucher ID: '}
-												<a href="{$link->getAdminLink('AdminCartRules')}&updatecart_rule&id_cart_rule={$return_info.id_object}" target="_blank">
-													#{$return_info.id_object}
+												<a href="{$link->getAdminLink('AdminCartRules')}&updatecart_rule&id_cart_rule={$return_info.id_return_type}" target="_blank">
+													#{$return_info.id_return_type}
 												</a>
-											{elseif $return_info.object_type == OrderReturn::OBJECT_TYPE_ORDER_SLIP}
+											{elseif $return_info.return_type == OrderReturn::RETURN_TYPE_ORDER_SLIP}
 												{l s='Credit Slip ID: '}
-												#{$return_info.id_object}
-												<a href="{$link->getAdminLink('AdminPdf')}&submitAction=generateOrderSlipPDF&id_order_slip={$return_info.id_object}" title="#{Configuration::get('PS_CREDIT_SLIP_PREFIX', $current_id_lang)}{$return_info.id_object|string_format:'%06d'}">
+												#{$return_info.id_return_type}
+												<a href="{$link->getAdminLink('AdminPdf')}&submitAction=generateOrderSlipPDF&id_order_slip={$return_info.id_return_type}" title="#{Configuration::get('PS_CREDIT_SLIP_PREFIX', $current_id_lang)}{$return_info.id_return_type|string_format:'%06d'}">
 													{l s='Download' mod='hotelreservationsystem'}
 												</a>
 											{/if}

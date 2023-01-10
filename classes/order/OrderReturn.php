@@ -52,10 +52,10 @@ class OrderReturnCore extends ObjectModel
     public $by_admin;
 
     /** @var int id_cart_rule or id_order_slip */
-    public $id_object;
+    public $id_return_type;
 
-    /** @var int whether $id_object is cart_rule or order_slip */
-    public $object_type;
+    /** @var int whether $id_return_type is cart_rule or order_slip */
+    public $return_type;
 
     /** @var string Object creation date */
     public $date_add;
@@ -63,9 +63,9 @@ class OrderReturnCore extends ObjectModel
     /** @var string Object last modification date */
     public $date_upd;
 
-    /** possible values for $object_type */
-    const OBJECT_TYPE_CART_RULE = 1;
-    const OBJECT_TYPE_ORDER_SLIP = 2;
+    /** possible values for $return_type */
+    const RETURN_TYPE_CART_RULE = 1;
+    const RETURN_TYPE_ORDER_SLIP = 2;
 
     /**
      * @see ObjectModel::$definition
@@ -82,8 +82,8 @@ class OrderReturnCore extends ObjectModel
             'refunded_amount' => array('type' => self::TYPE_FLOAT),
             'state' => array('type' => self::TYPE_INT),
             'by_admin' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
-            'id_object' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'object_type' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_return_type' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'return_type' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
         ),
@@ -250,7 +250,7 @@ class OrderReturnCore extends ObjectModel
         $sql = 'SELECT *
         FROM `'._DB_PREFIX_.'order_return` orr
         LEFT JOIN `'._DB_PREFIX_.'order_slip` ors
-        ON (ors.`id_order_slip` = orr.`id_object` AND orr.`object_type` = '.(int) self::OBJECT_TYPE_ORDER_SLIP.')
+        ON (ors.`id_order_slip` = orr.`id_return_type` AND orr.`return_type` = '.(int) self::RETURN_TYPE_ORDER_SLIP.')
         WHERE orr.`id_customer` = '.(int)$customer_id.
         ($only_customer ? ' AND orr.`by_admin` = 0' : '').
         ($order_id ? ' AND orr.`id_order` = '.(int)$order_id : '').

@@ -185,24 +185,24 @@
 									</div>
 								{/if}
 
-								{if isset($orderReturnInfo['object_type'])}
-									{if $orderReturnInfo['object_type'] == OrderReturn::OBJECT_TYPE_CART_RULE}
+								{if isset($orderReturnInfo['return_type'])}
+									{if $orderReturnInfo['return_type'] == OrderReturn::RETURN_TYPE_CART_RULE}
 										<div class="form-group row">
 											<div class="col-sm-3">
 												<strong>{l s='Voucher ID:' mod='hotelreservationsystem'}</strong>
 											</div>
 											<div class="col-sm-9">
-												<a href="{$link->getAdminLink('AdminCartRules')}&updatecart_rule&id_cart_rule={$orderReturnInfo['id_object']}" target="_blank">#{$orderReturnInfo['id_object']}</a>
+												<a href="{$link->getAdminLink('AdminCartRules')}&updatecart_rule&id_cart_rule={$orderReturnInfo['id_return_type']}" target="_blank">#{$orderReturnInfo['id_return_type']}</a>
 											</div>
 										</div>
-									{elseif $orderReturnInfo['object_type'] == OrderReturn::OBJECT_TYPE_ORDER_SLIP}
+									{elseif $orderReturnInfo['return_type'] == OrderReturn::RETURN_TYPE_ORDER_SLIP}
 										<div class="form-group row">
 											<div class="col-sm-3">
 												<strong>{l s='Credit Slip ID:' mod='hotelreservationsystem'}</strong>
 											</div>
 											<div class="col-sm-9">
-												#{$orderReturnInfo['id_object']}
-												<a class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generateOrderSlipPDF&id_order_slip={$orderReturnInfo['id_object']}" title="#{Configuration::get('PS_CREDIT_SLIP_PREFIX', $current_id_lang)}{$orderReturnInfo['id_object']|string_format:'%06d'}">
+												#{$orderReturnInfo['id_return_type']}
+												<a class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generateOrderSlipPDF&id_order_slip={$orderReturnInfo['id_return_type']}" title="#{Configuration::get('PS_CREDIT_SLIP_PREFIX', $current_id_lang)}{$orderReturnInfo['id_return_type']|string_format:'%06d'}">
 													<i class="icon-file-text"></i>
 													{l s='Download' mod='hotelreservationsystem'}
 												</a>

@@ -426,8 +426,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                         if (!$idCreditSlip = OrderSlip::create($objOrder, $bookingList, 0, 0, 0, 0)) {
                             $this->errors[] = $this->l('A credit slip cannot be generated. ');
                         } else {
-                            $objOrderReturn->id_object = $idCreditSlip;
-                            $objOrderReturn->object_type = OrderReturn::OBJECT_TYPE_ORDER_SLIP;
+                            $objOrderReturn->id_return_type = $idCreditSlip;
+                            $objOrderReturn->return_type = OrderReturn::RETURN_TYPE_ORDER_SLIP;
                             $objOrderReturn->save();
 
                             Hook::exec('actionOrderSlipAdd', array('order' => $objOrder, 'bookingList' => $bookingList));
@@ -477,8 +477,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                         if (!$cartrule->add()) {
                             $this->errors[] = $this->errors('You cannot generate a voucher.');
                         } else {
-                            $objOrderReturn->id_object = $cartrule->id;
-                            $objOrderReturn->object_type = OrderReturn::OBJECT_TYPE_CART_RULE;
+                            $objOrderReturn->id_return_type = $cartrule->id;
+                            $objOrderReturn->return_type = OrderReturn::RETURN_TYPE_CART_RULE;
                             $objOrderReturn->save();
                             // Update the voucher code and name
                             foreach ($language_ids as $id_lang) {
