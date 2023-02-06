@@ -428,8 +428,7 @@ class HotelCartBookingData extends ObjectModel
             }
         }
 
-        // return number of rooms deleted
-        return $numRooms;
+        return true;
     }
 
     public function addCartBookingData(
