@@ -80,6 +80,8 @@ class AdminImportControllerCore extends AdminController
 
     public function __construct()
     {
+        Tools::redirectAdmin(Context::getContext()->link->getAdminLink('AdminDashboard'));
+
         $this->bootstrap = true;
         $this->entities = array(
             $this->l('Categories'),
