@@ -229,22 +229,6 @@
 .cart_block .cart_block_convenience_fee {
   float: right; }
 
-.cart_block table.vouchers {
-  clear: both;
-  width: 80%;
-  margin: 0 auto;
-  margin-bottom: 10px; }
-  .cart_block table.vouchers tr td {
-    padding: 2px; }
-    .cart_block table.vouchers tr td.quantity {
-      margin-right: 5px;
-      min-width: 18px; }
-    .cart_block table.vouchers tr td.delete {
-      padding-left: 0;
-      padding-right: 0;
-      text-align: right;
-      width: 15px; }
-
 /*****************************************************************************
 					Layer Cart Css
 *****************************************************************************/

@@ -85,27 +85,6 @@ $(document).ready(function() {
         }
     );
 
-    $(document).on('click', '.delete_voucher', function(e) {
-        e.preventDefault();
-        $.ajax({
-            type: 'POST',
-            headers: {
-                "cache-control": "no-cache"
-            },
-            async: true,
-            cache: false,
-            url: $(this).attr('href') + '?rand=' + new Date().getTime()
-        });
-        $(this).parent().parent().remove();
-        ajaxCart.refresh();
-        if ($('body').attr('id') == 'order' || $('body').attr('id') == 'order-opc') {
-            if (typeof(updateAddressSelection) != 'undefined')
-                updateAddressSelection();
-            else
-                location.reload();
-        }
-    });
-
     $(document).on('click', '#cart_navigation input', function(e) {
         $(this).prop('disabled', 'disabled').addClass('disabled');
         $(this).closest("form").get(0).submit();
@@ -784,28 +763,6 @@ var ajaxCart = {
         return (exists);
     },
 
-    //refresh display of vouchers (needed for vouchers in % of the total)
-    refreshVouchers: function(jsonData) {
-        if (typeof(jsonData.discounts) == 'undefined' || jsonData.discounts.length == 0)
-            $('.vouchers').hide();
-        else {
-            $('.vouchers tbody').html('');
-
-            for (i = 0; i < jsonData.discounts.length; i++) {
-                if (parseFloat(jsonData.discounts[i].price_float) > 0) {
-                    var delete_link = '';
-                    if (jsonData.discounts[i].code.length)
-                        delete_link = '<a class="delete_voucher" href="' + jsonData.discounts[i].link + '" title="' + delete_txt + '"><i class="icon-remove-sign"></i></a>';
-                    $('.vouchers tbody').append($(
-                        '<tr class="bloc_cart_voucher" data-id="bloc_cart_voucher_' + jsonData.discounts[i].id + '">' + '	<td class="quantity">1x</td>' + '	<td class="name" title="' + jsonData.discounts[i].description + '">' + jsonData.discounts[i].name + '</td>' + '	<td class="price">-' + jsonData.discounts[i].price + '</td>' + '	<td class="delete">' + delete_link + '</td>' + '</tr>'
-                    ));
-                }
-            }
-            $('.vouchers').show();
-        }
-
-    },
-
     // Update product quantity
     updateProductQuantity: function(product, quantity) {
         $('dt[data-id=cart_block_product_' + product.id + '_' + (product.idCombination ? product.idCombination : '0') + '_' + (product.idAddressDelivery ? product.idAddressDelivery : '0') + '] .quantity').fadeTo('fast', 0, function() {
@@ -1127,7 +1084,6 @@ var ajaxCart = {
             ajaxCart.updateCartEverywhere(jsonData);
             ajaxCart.hideOldProducts(jsonData);
             ajaxCart.displayNewProducts(jsonData);
-            ajaxCart.refreshVouchers(jsonData);
 
             //update 'first' and 'last' item classes
             $('.cart_block .products dt').removeClass('first_item').removeClass('last_item').removeClass('item');

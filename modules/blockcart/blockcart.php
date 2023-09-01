@@ -148,41 +148,6 @@ class Blockcart extends Module
         }
         // The cart content is altered for display
         $orderProcess = Configuration::get('PS_ORDER_PROCESS_TYPE') ? 'order-opc' : 'order';
-        foreach ($cart_rules as &$cart_rule) {
-            if ($cart_rule['free_shipping']) {
-                $shipping_cost = Tools::displayPrice(0, $currency);
-                $shipping_cost_float = 0;
-                $cart_rule['value_real'] -= Tools::convertPrice($base_shipping_with_tax, $currency);
-                $cart_rule['value_tax_exc'] = Tools::convertPrice($base_shipping_without_tax, $currency);
-            }
-            if ($cart_rule['gift_product']) {
-                foreach ($products as $key => &$product) {
-                    if ($product['id_product'] == $cart_rule['gift_product']
-                        && $product['id_product_attribute'] == $cart_rule['gift_product_attribute']) {
-                        $product['total_wt'] = Tools::ps_round($product['total_wt'] - $product['price_wt'], (int) $currency->decimals * _PS_PRICE_DISPLAY_PRECISION_);
-                        $product['total'] = Tools::ps_round($product['total'] - $product['price'], (int) $currency->decimals * _PS_PRICE_DISPLAY_PRECISION_);
-                        if ($product['cart_quantity'] > 1) {
-                            array_splice($products, $key, 0, array($product));
-                            $products[$key]['cart_quantity'] = $product['cart_quantity'] - 1;
-                            $product['cart_quantity'] = 1;
-                        }
-                        $product['is_gift'] = 1;
-                        $cart_rule['value_real'] = Tools::ps_round($cart_rule['value_real'] - $product['price_wt'], (int) $currency->decimals * _PS_PRICE_DISPLAY_PRECISION_);
-                        $cart_rule['value_tax_exc'] = Tools::ps_round($cart_rule['value_tax_exc'] - $product['price'], (int) $currency->decimals * _PS_PRICE_DISPLAY_PRECISION_);
-                    }
-                }
-            }
-            $cart_rule['id'] = $cart_rule['id_discount'];
-            $cart_rule['link'] = $this->context->link->getPageLink($orderProcess, true, NULL, "deleteDiscount=".$cart_rule['id_discount']);
-            if ($priceDisplayMethod == PS_TAX_EXC) {
-                $cart_rule['price'] = Tools::displayPrice($cart_rule['value_tax_exc']);
-                $cart_rule['price_float'] = $cart_rule['value_tax_exc'];
-            } else {
-                $cart_rule['price'] = Tools::displayPrice($cart_rule['value_real']);
-                $cart_rule['price_float'] = $cart_rule['value_real'];
-            }
-
-        }
 
         $total_free_shipping = 0;
         if ($free_shipping = Tools::convertPrice(floatval(Configuration::get('PS_SHIPPING_FREE_PRICE')), $currency)) {
@@ -277,7 +242,6 @@ class Blockcart extends Module
             'customizedDatas' => Product::getAllCustomizedDatas((int) ($params['cart']->id)),
             'CUSTOMIZE_FILE' => Product::CUSTOMIZE_FILE,
             'CUSTOMIZE_TEXTFIELD' => Product::CUSTOMIZE_TEXTFIELD,
-            'discounts' => $cart_rules,
             'nb_total_products' => (int) ($nbTotalProducts),
             'total_products_in_cart' => (int) ($totalRooms) + (int) ($nbTotalProducts),
             'shipping_cost' => $shipping_cost,

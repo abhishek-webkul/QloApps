@@ -166,30 +166,6 @@
 						<p class="cart_block_no_products{if $products} unvisible{/if}">
 							{l s='No products' mod='blockcart'}
 						</p>
-						{if $discounts|@count > 0}
-							<table class="vouchers{if $discounts|@count == 0} unvisible{/if}">
-								{foreach from=$discounts item=discount}
-									{if $discount.value_real > 0}
-										<tr class="bloc_cart_voucher" data-id="bloc_cart_voucher_{$discount.id_discount|intval}">
-											<td class="quantity">1x</td>
-											<td class="name" title="{$discount.description}">
-												{$discount.name|truncate:18:'...'|escape:'html':'UTF-8'}
-											</td>
-											<td class="price">
-												-{if $priceDisplay == 1}{convertPrice price=$discount.value_tax_exc}{else}{convertPrice price=$discount.value_real}{/if}
-											</td>
-											<td class="delete">
-												{if strlen($discount.code)}
-													<a class="delete_voucher" href="{$link->getPageLink("$order_process", true)}?deleteDiscount={$discount.id_discount|intval}" title="{l s='Delete' mod='blockcart'}" rel="nofollow">
-														<i class="icon-remove-sign"></i>
-													</a>
-												{/if}
-											</td>
-										</tr>
-									{/if}
-								{/foreach}
-							</table>
-						{/if}
 						<div class="cart-prices">
 							<!-- <div class="cart-prices-line first-line">
 								<span class="price cart_block_shipping_cost ajax_cart_shipping_cost{if !($page_name == 'order-opc') && $shipping_cost_float == 0 && (!isset($cart->id_address_delivery) || !$cart->id_address_delivery)} unvisible{/if}">
